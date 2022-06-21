@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  development:
+    hostname: go-faceit
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DEBUG: "true"
+    volumes:
+      - .:/home/www/faceit
+    ports:
+      - "8080:8080"
