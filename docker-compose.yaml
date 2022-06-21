@@ -1,14 +1,30 @@
-version: "3.8"
+version: "3.9"
 
 services:
-  development:
-    hostname: go-faceit
+  go:
+    hostname: faceit
     build:
       context: .
       dockerfile: Dockerfile
-    environment:
-      DEBUG: "true"
+    depends_on:
+      - mongoDB
     volumes:
       - .:/home/www/faceit
     ports:
       - "8080:8080"
+    environment:
+      DEBUG: "true"
+  
+  mongoDB:
+    image: mongo:5.0
+    env_file: .env
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+  
+volumes:
+  mongo-data:
