@@ -3,38 +3,42 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
-	"net/http"
 	"os"
 	"os/signal"
+	"time"
 
+	"github.com/Slamadalius/faceit/internal/repository"
 	"github.com/Slamadalius/faceit/internal/server"
+	userHttpHandler "github.com/Slamadalius/faceit/internal/user/handler/http"
+	userService "github.com/Slamadalius/faceit/internal/user/service"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
+
+const contextTimeout = 5
 
 func main() {
 	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found")
+		panic(err)
 	}
 
-	uri := fmt.Sprintf("mongodb://%s:%s@mongoDB:27017/?maxPoolSize=20", os.Getenv("MONGO_USERNAME"), os.Getenv("MONGO_PASSWORD"))
-
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s@mongoDB:27017/?maxPoolSize=20", os.Getenv("MONGO_USERNAME"), os.Getenv("MONGO_PASSWORD"))))
 	if err != nil {
 		panic(err)
 	}
 
-	if err := client.Ping(context.TODO(), readpref.Primary()); err != nil {
+	if err := client.Ping(context.TODO(), nil); err != nil {
 		panic(err)
 	}
-	fmt.Println("Successfully connected and pinged.")
+
+	userRepository := repository.NewUserRepository(client)
+	userService := userService.NewUserService(userRepository, time.Duration(contextTimeout)*time.Second)
 
 	router := mux.NewRouter()
-	router.HandleFunc("/faceit", handler).Methods("GET")
+
+	userHttpHandler.NewUserHandler(router, userService)
 
 	server := server.Server{}
 	server.Start(router)
@@ -44,8 +48,4 @@ func main() {
 	<-c
 
 	server.Shutdown()
-}
-
-func handler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("hello"))
 }
