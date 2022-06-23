@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/Slamadalius/faceit/internal/entity"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -37,8 +38,29 @@ func (r *userRepository) Insert(ctx context.Context, entityUser entity.User) (er
 	document := user{}
 	document.ID = primitive.NewObjectID()
 	document.mapEntity(entityUser)
+	document.CreatedAt = time.Now()
 
 	_, err = coll.InsertOne(ctx, document)
+	return
+}
+
+func (r *userRepository) Update(ctx context.Context, userID string, entityUser entity.User) (err error) {
+	coll := r.client.Database("faceit").Collection("users")
+
+	objectID, _ := primitive.ObjectIDFromHex(userID)
+
+	update := bson.M{
+		"$set": bson.M{
+			"first_name": entityUser.FirstName,
+			"last_name":  entityUser.LastName,
+			"nickname":   entityUser.Nickname,
+			"password":   entityUser.Password,
+			"email":      entityUser.Email,
+			"country":    entityUser.Country,
+		},
+	}
+
+	_, err = coll.UpdateByID(ctx, objectID, update)
 	return
 }
 
@@ -49,6 +71,4 @@ func (u *user) mapEntity(entityUser entity.User) {
 	u.Password = entityUser.Password
 	u.Email = entityUser.Email
 	u.Country = entityUser.Country
-	u.CreatedAt = entityUser.CreatedAt
-	u.UpdatedAt = entityUser.UpdatedAt
 }

@@ -23,7 +23,12 @@ func (s *service) CreateUser(ctx context.Context, user entity.User) (err error) 
 	ctx, cancel := context.WithTimeout(ctx, s.contextTimeout)
 	defer cancel()
 
-	user.CreatedAt = time.Now()
-
 	return s.repository.Insert(ctx, user)
+}
+
+func (s *service) UpdateUser(ctx context.Context, userID string, user entity.User) (err error) {
+	ctx, cancel := context.WithTimeout(ctx, s.contextTimeout)
+	defer cancel()
+
+	return s.repository.Update(ctx, userID, user)
 }
