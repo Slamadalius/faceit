@@ -18,9 +18,9 @@ func (s *Server) Start(router http.Handler) {
 	}
 
 	go func() {
-		log.Print("server listening on port :8080")
+		log.Println("server listening on port :8080")
 		if err := s.server.ListenAndServe(); err != nil {
-			log.Print("server closed")
+			log.Println("server closed")
 		} else {
 			log.Fatal(err)
 		}
@@ -31,7 +31,7 @@ func (s *Server) Shutdown() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
 	defer cancel()
 
-	log.Print("server shutting down")
+	log.Println("server shutting down")
 	if err := s.server.Shutdown(ctx); err != nil {
 		log.Fatal(err)
 	}
