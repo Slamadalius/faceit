@@ -64,6 +64,15 @@ func (r *userRepository) Update(ctx context.Context, userID string, entityUser e
 	return
 }
 
+func (r *userRepository) Delete(ctx context.Context, userID string) (err error) {
+	coll := r.client.Database("faceit").Collection("users")
+
+	objectID, _ := primitive.ObjectIDFromHex(userID)
+
+	_, err = coll.DeleteOne(ctx, bson.M{"_id": objectID})
+	return
+}
+
 func (u *user) mapEntity(entityUser entity.User) {
 	u.FirstName = entityUser.FirstName
 	u.LastName = entityUser.LastName

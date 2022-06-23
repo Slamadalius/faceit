@@ -32,3 +32,10 @@ func (s *service) UpdateUser(ctx context.Context, userID string, user entity.Use
 
 	return s.repository.Update(ctx, userID, user)
 }
+
+func (s *service) DeleteUser(ctx context.Context, userID string) (err error) {
+	ctx, cancel := context.WithTimeout(ctx, s.contextTimeout)
+	defer cancel()
+
+	return s.repository.Delete(ctx, userID)
+}

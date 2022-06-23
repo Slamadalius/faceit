@@ -20,9 +20,11 @@ type User struct {
 type UserService interface {
 	CreateUser(ctx context.Context, user User) (err error)
 	UpdateUser(ctx context.Context, userID string, user User) (err error)
+	DeleteUser(ctx context.Context, userID string) (err error)
 }
 
 type UserRepository interface {
 	Insert(ctx context.Context, user User) (err error)
 	Update(ctx context.Context, userID string, user User) (err error)
+	Delete(ctx context.Context, userID string) (err error)
 }
