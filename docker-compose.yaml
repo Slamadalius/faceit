@@ -9,7 +9,7 @@ services:
     depends_on:
       - mongoDB
     volumes:
-      - .:/home/www/faceit
+      - .:/go/src/faceit
     ports:
       - "8080:8080"
     environment:
