@@ -19,8 +19,8 @@ type Listener struct {
 	workersCount int
 }
 
-// this can be used with rabbitMQ or other messaging platform to notify other
-// services about changes to user
+// this can be used with rabbitMQ or other messaging platform to notify
+// other services about changes to user
 
 func NewListener(workersCount int) *Listener {
 	return &Listener{
