@@ -7,8 +7,6 @@ this will start go app and mongoDB instance
 
 go http server is listening on port :8080
 
-in postman or curl 
-
 #### header
 `Content-Type: application/json`
 
@@ -56,7 +54,7 @@ body {
 ```
 Update user by ID given in url. Empty value is going to be set if field is not specified.
 
-#### create user
+#### delete user
 ```DELETE localhost:8080/user/{id}/delete```
 
 ### Run tests
