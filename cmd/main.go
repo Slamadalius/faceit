@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"time"
 
 	"github.com/Slamadalius/faceit/internal/repository"
 	"github.com/Slamadalius/faceit/internal/server"
@@ -29,7 +28,7 @@ func main() {
 	}
 
 	userRepository := repository.NewUserRepository(mongoClient)
-	userService := userService.NewUserService(userRepository, time.Duration(contextTimeout)*time.Second)
+	userService := userService.NewUserService(userRepository)
 
 	router := mux.NewRouter()
 

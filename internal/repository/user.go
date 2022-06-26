@@ -8,7 +8,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+const perPage = 2
 
 type user struct {
 	ID        primitive.ObjectID `bson:"_id"`
@@ -30,6 +33,42 @@ func NewUserRepository(client *mongo.Client) entity.UserRepository {
 	return &userRepository{
 		client: client,
 	}
+}
+
+func (r *userRepository) FindAll(ctx context.Context, filters map[string]string, page int) (users []entity.User, err error) {
+	coll := r.client.Database("faceit").Collection("users")
+
+	bsonFilters := []bson.M{}
+	for key, value := range filters {
+		bsonFilters = append(bsonFilters, bson.M{key: value})
+	}
+
+	orFilter := bson.M{
+		"$or": bsonFilters,
+	}
+
+	findOptions := options.Find()
+	if page != 0 {
+		findOptions.SetSkip((int64(page) - 1) * perPage)
+	}
+	findOptions.SetLimit(perPage)
+
+	cursor, err := coll.Find(ctx, orFilter, findOptions)
+	if err != nil {
+		return
+	}
+	defer cursor.Close(ctx)
+
+	var user user
+	for cursor.Next(ctx) {
+		if err = cursor.Decode(&user); err != nil {
+			return
+		}
+		entityUser := user.mapUser()
+		users = append(users, entityUser)
+	}
+
+	return
 }
 
 func (r *userRepository) Insert(ctx context.Context, entityUser entity.User) (err error) {
@@ -80,4 +119,18 @@ func (u *user) mapEntity(entityUser entity.User) {
 	u.Password = entityUser.Password
 	u.Email = entityUser.Email
 	u.Country = entityUser.Country
+}
+
+func (u *user) mapUser() entity.User {
+	entityUser := entity.User{}
+	entityUser.ID = u.ID.Hex()
+	entityUser.FirstName = u.FirstName
+	entityUser.LastName = u.LastName
+	entityUser.Email = u.Email
+	entityUser.Nickname = u.Nickname
+	entityUser.Country = u.Country
+	entityUser.CreatedAt = u.CreatedAt
+	entityUser.UpdatedAt = u.UpdatedAt
+
+	return entityUser
 }

@@ -2,11 +2,17 @@ package http
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/Slamadalius/faceit/internal/entity"
 	"github.com/gorilla/mux"
 )
+
+type FindRequest struct {
+	Filters map[string]string `json:"filters"`
+	Page    int               `json:"page"`
+}
 
 type Handler struct {
 	Service entity.UserService
@@ -17,9 +23,38 @@ func NewUserHandler(router *mux.Router, userService entity.UserService) {
 		Service: userService,
 	}
 
-	router.HandleFunc("/user", handler.createUser).Methods(http.MethodPost)
-	router.HandleFunc("/user/{id}", handler.updateUser).Methods(http.MethodPut)
-	router.HandleFunc("/user/{id}", handler.deleteUser).Methods(http.MethodDelete)
+	router.HandleFunc("/user/find", handler.findUsers).Methods(http.MethodPost)
+	router.HandleFunc("/user/create", handler.createUser).Methods(http.MethodPost)
+	router.HandleFunc("/user/{id}/update", handler.updateUser).Methods(http.MethodPut)
+	router.HandleFunc("/user/{id}/delete", handler.deleteUser).Methods(http.MethodDelete)
+}
+
+func (h *Handler) findUsers(w http.ResponseWriter, r *http.Request) {
+	findRequest := FindRequest{}
+
+	if err := json.NewDecoder(r.Body).Decode(&findRequest); err != nil {
+		write(w, []byte(`{"error": "bad request"}`), http.StatusBadRequest)
+
+		return
+	}
+
+	users, err := h.Service.FindUsers(r.Context(), findRequest.Filters, findRequest.Page)
+	if err != nil {
+		log.Println(err)
+		write(w, []byte(`{"error": "internal server error"}`), http.StatusInternalServerError)
+
+		return
+	}
+
+	if len(users) == 0 {
+		write(w, []byte(`{"error": "not found"}`), http.StatusNotFound)
+
+		return
+	}
+
+	jsonUsers, _ := json.Marshal(users)
+
+	write(w, jsonUsers, http.StatusOK)
 }
 
 func (h *Handler) createUser(w http.ResponseWriter, r *http.Request) {
