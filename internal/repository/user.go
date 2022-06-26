@@ -71,7 +71,7 @@ func (r *userRepository) FindAll(ctx context.Context, filters map[string]string,
 	return
 }
 
-func (r *userRepository) Insert(ctx context.Context, entityUser entity.User) (err error) {
+func (r *userRepository) Insert(ctx context.Context, entityUser entity.User) (insertedUserID string, err error) {
 	coll := r.client.Database("faceit").Collection("users")
 
 	document := user{}
@@ -79,7 +79,13 @@ func (r *userRepository) Insert(ctx context.Context, entityUser entity.User) (er
 	document.mapEntity(entityUser)
 	document.CreatedAt = time.Now()
 
-	_, err = coll.InsertOne(ctx, document)
+	result, err := coll.InsertOne(ctx, document)
+	if err != nil {
+		return
+	}
+
+	insertedObjID := result.InsertedID.(primitive.ObjectID)
+	insertedUserID = insertedObjID.Hex()
 	return
 }
 

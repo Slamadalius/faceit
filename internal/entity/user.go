@@ -28,7 +28,7 @@ type UserService interface {
 //go:generate mockgen -destination=../mocks/mock_user.go -package=mocks -source=user.go UserRepository
 type UserRepository interface {
 	FindAll(ctx context.Context, filterParams map[string]string, page int) (users []User, err error)
-	Insert(ctx context.Context, user User) (err error)
+	Insert(ctx context.Context, user User) (insertedUserID string, err error)
 	Update(ctx context.Context, userID string, user User) (err error)
 	Delete(ctx context.Context, userID string) (err error)
 }

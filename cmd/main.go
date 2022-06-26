@@ -8,13 +8,14 @@ import (
 	"github.com/Slamadalius/faceit/internal/repository"
 	"github.com/Slamadalius/faceit/internal/server"
 	userHttpHandler "github.com/Slamadalius/faceit/internal/user/handler/http"
+	"github.com/Slamadalius/faceit/internal/user/listener"
 	userService "github.com/Slamadalius/faceit/internal/user/service"
 	"github.com/Slamadalius/faceit/pkg/mongoDB"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
 
-const contextTimeout = 5
+const workersCount = 5
 
 func main() {
 	if err := godotenv.Load(); err != nil {
@@ -34,6 +35,9 @@ func main() {
 
 	userHttpHandler.NewUserHandler(router, userService)
 
+	listener := listener.NewListener(workersCount)
+	listener.Start()
+
 	server := server.Server{}
 	server.Start(router)
 
@@ -42,4 +46,6 @@ func main() {
 	<-c
 
 	server.Shutdown()
+	listener.Stop()
+	listener.Wait()
 }

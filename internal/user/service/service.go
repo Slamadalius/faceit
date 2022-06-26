@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Slamadalius/faceit/internal/entity"
+	"github.com/Slamadalius/faceit/internal/user/listener"
 )
 
 const (
@@ -26,7 +27,17 @@ func (s *service) FindUsers(ctx context.Context, filterParams map[string]string,
 }
 
 func (s *service) CreateUser(ctx context.Context, user entity.User) (err error) {
-	return s.repository.Insert(ctx, user)
+	insertedUserID, err := s.repository.Insert(ctx, user)
+	if err != nil {
+		return
+	}
+
+	listener.AddRequest(listener.UserAction{
+		UserID: insertedUserID,
+		Action: "created",
+	})
+
+	return
 }
 
 func (s *service) UpdateUser(ctx context.Context, userID string, user entity.User) (err error) {
