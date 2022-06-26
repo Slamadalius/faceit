@@ -1,3 +1,7 @@
+### About
+API for user management. Uses mongoDB for data storage. Application structure:
+repository (for interactions with DB) -> service (business logic, at this app stage seems as an overkill but easier to manage dependencies in the future) -> handlers (http, also rpc can be added or other adapters)
+
 ### How to run
 To start the app run:
 ```
@@ -62,10 +66,12 @@ Update user by ID given in url. Empty value is going to be set if field is not s
 
 ### Improvements
 
-* more test coverage.
-* no endpoint for adding a mineral or removing.
-* if action is not performed or fails, there is no message to the user.
-* maybe factory shouldn't be coupled with Listener interface, and instead manager is passed to the factory.
-* other ways to interact with the app.
-* no check how app performs if Factory or Manager is not working.
-* no user input validation.
+* password saved withouth encryption :O
+* no user request validations
+* generic error messages
+* more tests and for different cases
+* messy way of dealing with User struct (maping in repository etc.)
+* documentation (swagger)
+* logging implemantation
+* no health check
+* 
